@@ -1,6 +1,6 @@
 # 🚀 xinayu-java - 一个监听咸鱼的聊天框架
 
-[![java Version](https://img.shields.io/badge/java-8%2B-blue)](https://www.python.org/) [![Python Version](https://img.shields.io/badge/nodejs-18%2B-blue)](https://nodejs.org/zh-cn/) 
+[![java Version](https://img.shields.io/badge/java-8%2B-blue)](https://www.python.org/) [![Python Version](https://img.shields.io/badge/srpingboot-3%2B-blue)](https://nodejs.org/zh-cn/) 
 
 为springboot项目提供对咸鱼平台消息监听，可以再此基础上继承springai实现智能客服，由于是第一次开发比较仓促后面后面又时间会优化和改进代，请各位大佬莫要笑话在下。
 
@@ -15,34 +15,50 @@
 
 ## 🎨效果图
 
-![](imges\微信截图_20250524011037.png)
+<div align="center">
+  <img src="./images/微信截图_20250524011037.png" width="600">
+  <br>
+</div>
 
-![](imges\微信截图_20250524011332.png)
+<div align="center">
+  <img src="./images/微信截图_20250524011332.png" width="600">
+  <br>
+</div>
 
 ## 🚴 快速开始
 
 ### 环境要求
 - Java 8+
-- NodeJS 18+
+
+  
 
 ### 安装步骤
 
 1. 由于没有上传到maven需要到本仓库自行拉取
-  git clone https://github.com/codermyxiaoc/xianyu-java.git
+    git clone https://github.com/codermyxiaoc/xianyu-java.git
 
 2. 在springboot项目使用
-  pom文件导入对应依赖xianyu-java
+    pom文件导入对应依赖xianyu-java
 
-  ![](imges\微信截图_20250524014038.png)
+<div align="center">
+  <img src="./images/微信截图_20250524014038.png" width="600">
+  <br>
+</div>
 
 3. 配置咸鱼cookie
-  在aplication.yml配置xianyu.cookie-str
+    在aplication.yml配置xianyu.cookie-str
 
-  ![](imges\微信截图_20250524014102.png)
+<div align="center">
+  <img src="./images/微信截图_20250524014102.png" width="600">
+  <br>
+</div>
 
 4. 实现AbstractMessageHandler类对各种消息监听
 
-  ![](imges\微信截图_20250524014117.png)
+<div align="center">
+  <img src="./images/微信截图_20250524014117.png" width="600">
+  <br>
+</div>
 
 ## 🤝 参与贡献
 
