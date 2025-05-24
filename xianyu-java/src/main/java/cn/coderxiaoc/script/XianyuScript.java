@@ -3,6 +3,8 @@ package cn.coderxiaoc.script;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 public class XianyuScript {
@@ -47,35 +49,48 @@ public class XianyuScript {
             if (resource == null) {
                 throw new FileNotFoundException("Script file not found: " + SCRIPT_NAME);
             }
-            String exePath = new File(resource.toURI()).getAbsolutePath();
 
-            List<String> command = new ArrayList<>();
-            command.add(exePath);
-            command.addAll(Arrays.asList(args));
+            // 读取资源为流
+            try (InputStream input = resource.openStream()) {
+                // 创建临时可执行文件
+                String suffix = SCRIPT_NAME.contains(".") ? SCRIPT_NAME.substring(SCRIPT_NAME.lastIndexOf(".")) : null;
+                File tempScript = File.createTempFile("xianyu-script-", suffix);
+                tempScript.deleteOnExit(); // 程序退出时自动删除
+                Files.copy(input, tempScript.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                tempScript.setExecutable(true); // 设置可执行权限
 
-            ProcessBuilder processBuilder = new ProcessBuilder(command);
-            processBuilder.redirectErrorStream(true);
+                String exePath = tempScript.getAbsolutePath();
 
-            Process process = processBuilder.start();
-            StringBuilder output = new StringBuilder();
+                // 构造命令行
+                List<String> command = new ArrayList<>();
+                command.add(exePath);
+                command.addAll(Arrays.asList(args));
 
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    output.append(line);
+                ProcessBuilder processBuilder = new ProcessBuilder(command);
+                processBuilder.redirectErrorStream(true);
+
+                Process process = processBuilder.start();
+                StringBuilder output = new StringBuilder();
+
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        output.append(line).append("\n");
+                    }
                 }
-            }
 
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                System.out.println("Script execution failed with exit code: " + exitCode);
-                return null;
-            }
+                int exitCode = process.waitFor();
+                if (exitCode != 0) {
+                    System.out.println("Script execution failed with exit code: " + exitCode);
+                    return null;
+                }
 
-            return output.toString();
+                return output.toString();
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
+
     }
 }
