@@ -16,10 +16,10 @@ public class XianyuConfig {
     @Bean
 
     public XianyuMain xianyuMain() {
-        if (xianyuProperty.getCookieStr() == null) {
+        if (xianyuProperty.getCookieStr().isEmpty()) {
             throw new RuntimeException("请配置cookie");
         }
-        XianyuMain xianyuMain = new XianyuMain(xianyuProperty.getCookieStr(), handler);
+        XianyuMain xianyuMain = new XianyuMain(xianyuProperty.getCookieStr(), handler, xianyuProperty.getEnableLog());
         try {
             xianyuMain.connect();
             if (handler != null) {

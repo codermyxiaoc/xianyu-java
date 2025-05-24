@@ -35,6 +35,7 @@
 ### 安装步骤
 
 1. 由于没有上传到maven需要到本仓库自行拉取
+
     git clone https://github.com/codermyxiaoc/xianyu-java.git
 
 2. 在springboot项目使用
@@ -47,6 +48,7 @@
 
 3. 配置咸鱼cookie
     在aplication.yml配置xianyu.cookie-str
+    cookie自行在闲鱼网页端获取cookies(网页端F12打开控制台，选择Network，点击Fetch/XHR,点击一个请求，查看cookies)
 
 <div align="center">
   <img src="./images/微信截图_20250524014102.png" width="600">

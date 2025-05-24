@@ -33,14 +33,17 @@ public class XianyuMain {
     private WebSocketClient webSocketClient;
     private final XianyuApis xianyuApis;
     private final MessageHandler messageHandler;
+    private final boolean log;
 
-    public XianyuMain(String cookieStr, MessageHandler messageHandler) {
+
+    public XianyuMain(String cookieStr, MessageHandler messageHandler, boolean log) {
         this.cookieStr = cookieStr;
         this.cookies = XianyuScript.transCookies(cookieStr);
         this.myId = cookies.get("unb");
         this.deviceId = XianyuScript.generateDeviceId(myId);
         this.xianyuApis = new XianyuApis();
         this.messageHandler = messageHandler;
+        this.log = log;
     }
 
     public void connect() throws Exception {
@@ -58,7 +61,9 @@ public class XianyuMain {
 
             @Override
             public void onMessage(String message) {
-                System.out.println("📩 Message received: " + message);
+                if (log) {
+                    System.out.println("📩 Message received: " + message);
+                }
                 handleIncomingMessage(message);
             }
 
@@ -130,7 +135,9 @@ public class XianyuMain {
                 headers.put("mid", XianyuScript.generateMid());
                 hb.put("headers", headers);
                 webSocketClient.send(hb.toString());
-                System.out.println("Heartbeat sent");
+                if (log) {
+                    System.out.println("Heartbeat sent");
+                }
             }
         }, 0, TimeUnit.SECONDS.toMillis(15));
     }
@@ -153,7 +160,9 @@ public class XianyuMain {
                     messageData.getBody().getSyncPushPackage().getData() != null &&  messageData.getBody().getSyncPushPackage().getData().size() > 0) {
                 String decryptedData = XianyuScript.decrypt(messageData.getBody().getSyncPushPackage().getData().get(0).getData());
 
-                messageDispatch(decryptedData);
+                if (messageHandler != null) {
+                    messageDispatch(decryptedData);
+                }
             }
 
         } catch (Exception e) {
@@ -161,40 +170,55 @@ public class XianyuMain {
         }
     }
     public void messageDispatch(String dataStr) {
-        if (dataStr == null) {
+        if (dataStr == null || dataStr.isEmpty()) {
             return;
         }
-        if (messageHandler == null) {
-            return;
-        }
+        messageHandler.allMessage(dataStr);
         JSONObject data = new JSONObject(dataStr);
-        if (data.get("1") instanceof JSONObject) {
-            NotificationMessage notificationMessage = NotificationMessage.fromJson(data.getJSONObject("1").getJSONObject("10").toString());
-            if (dataStr.contains("交易关闭")) {
-                messageHandler.userCloseTransaction(notificationMessage);
-            } else if (dataStr.contains("待付款")) {
-                messageHandler.obligation(notificationMessage);
-            } else if (dataStr.contains("记得及时发货")) {
-                messageHandler.userInput(notificationMessage.getCid());
-            }
-            else if (dataStr.contains("已付款")) {
-                messageHandler.userPay(notificationMessage);
-            } else if (dataStr.contains("退款申请")) {
-                messageHandler.userUnPay(notificationMessage);
-            }
-            else{
-                notificationMessage.setCid(data.getJSONObject("1").getString("2").split("@")[0]);
-                messageHandler.oneMessage(notificationMessage);
-            }
-        }else if (data.get("1") instanceof JSONArray) {
-            JSONArray jsonArray = data.getJSONArray("1");
-            if (jsonArray.get(0) instanceof String) {
-            } else {
-                if (jsonArray.getJSONObject(0).getString("1").contains("@goofish")) {
-                    messageHandler.userInput(jsonArray.getJSONObject(0).getString("1").split("@")[0]);
-                }
-            }
+        if (data.has("1")) {
+            Object var1 = data.get("1");
+            if (var1 instanceof String) {
 
+            } else if (var1 instanceof JSONArray) {
+                JSONArray varObj1 = data.getJSONArray("1");
+                if (varObj1.get(0) instanceof JSONObject) {
+                    if (varObj1.getJSONObject(0).getString("1").contains("@goofish")) {
+                        messageHandler.userInput(varObj1.getJSONObject(0).getString("1").split("@")[0]);
+                    }
+                } else {
+                    messageHandler.defaultMessage(dataStr);
+                }
+            } else if (var1 instanceof JSONObject) {
+                JSONObject var11 = data.getJSONObject("1");
+                NotificationMessage notificationMessage = NotificationMessage.fromJson(var11.getJSONObject("10").toString());
+                notificationMessage.setCid(var11.getString("2").split("@")[0]);
+                if (!notificationMessage.getSenderUserId().equals(myId)) {
+                    if (var11.getInt("7") == 1) {
+                        String var3 = var11.getJSONObject("6").getJSONObject("3").getString("2");
+                        if (var3.equals("[我已拍下，待付款]")) {
+                            messageHandler.obligation(notificationMessage);
+                        } else if (var3.contains("[我已付款，等待你发货]")) {
+                            messageHandler.userPay(notificationMessage);
+                        } else if (var3.contains("[记得及时发货]")) {
+                            messageHandler.remindOfShipment(notificationMessage);
+                        } else if (var3.contains("[未付款，买家关闭了订单]")) {
+                            messageHandler.userCloseTransaction(notificationMessage);
+                        }else if (var3.contains("[我发起了退款申请]")) {
+                            messageHandler.userUnPay(notificationMessage);
+                        } else {
+                            messageHandler.defaultMessage(dataStr);
+                        }
+                    } else if (var11.getInt("7") == 2) {
+                        messageHandler.onMessage(notificationMessage);
+                    }else {
+                        messageHandler.defaultMessage(dataStr);
+                    }
+                } else {
+                    messageHandler.myUserMessage(notificationMessage);
+                }
+            } else {
+                messageHandler.defaultMessage(dataStr);
+            }
         }
     }
     public void sendMsg(String cid, String toId, String text) {
