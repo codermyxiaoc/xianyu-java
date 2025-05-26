@@ -48,7 +48,7 @@
 
 3. 配置咸鱼cookie
     在aplication.yml配置xianyu.cookie-str
-    cookie自行在闲鱼网页端获取cookies(网页端F12打开控制台，选择Network，点击Fetch/XHR,点击一个请求，查看cookies)
+    cookie自行在闲鱼网页端获取cookies(网页端F12打开控制台，选择Network，点击Fetch/XHR,点击一个请求，请求头查看cookies)
 
 <div align="center">
   <img src="./images/微信截图_20250524014102.png" width="600">
@@ -58,9 +58,10 @@
 4. 实现AbstractMessageHandler类对各种消息监听
 
 <div align="center">
-  <img src="./images/微信截图_20250524014117.png" width="600">
+  <img src="./images/微信截图_20250526102643.png" width="600">
   <br>
 </div>
+
 
 ## 🤝 参与贡献
 
